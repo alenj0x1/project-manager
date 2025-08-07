@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ProjectManager.WebApi.Models.Requests.Project
+namespace ProjectManager.Application.Models.Requests.Project
 {
     public class CreateProjectRequest
     {

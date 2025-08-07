@@ -1,19 +1,25 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ProjectManager.WebApi.Models.Requests.Project;
+using ProjectManager.Application.Models.Requests.Project;
+using ProjectManager.Application.Dtos;
+using ProjectManager.Application.Models;
+using ProjectManager.Application.Interfaces.Services;
+using ProjectManager.Application.Services;
 
 namespace ProjectManager.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProjectController : ControllerBase
+    public class ProjectController(IProjectService projectService) : ControllerBase
     {
-        [HttpPost]
-        public IActionResult Create([FromBody] CreateProjectRequest request)
+        private readonly IProjectService _projectService = projectService;
+
+        [HttpPost("create")]
+        public GenericResponse<ProjectDto> Create([FromBody] CreateProjectRequest request)
         {
             try
             {
-                return Ok(request);
+                return _projectService.Create(request);
             }
             catch (Exception)
             {
@@ -23,15 +29,14 @@ namespace ProjectManager.WebApi.Controllers
         }
 
         // getById/ce5c4d95-dd15-4e8b-bb3a-7bf19c46f40a
-        [HttpGet("/getById/{projectId:guid}/{number:int}")]
-        public IActionResult GetById(Guid projectId, int number)
+        [HttpGet("/getById/{projectId:guid}")]
+        public IActionResult GetById(Guid projectId)
         {
             try
             {
                 return Ok(new
                 {
-                    ProjectId = projectId,
-                    Number = number
+                    ProjectId = projectId
                 });
             }
             catch (Exception)
@@ -42,7 +47,41 @@ namespace ProjectManager.WebApi.Controllers
         }
 
         // Agregar metodo para actualizar un proyecto
+        [HttpPut("/update/{projectId:guid}")]
+        public IActionResult Update(Guid projectId, UpdateProjectRequest request)
+        {
+            try
+            {
+                return Ok(new
+                {
+                    ProjectId = projectId
+                });
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+
 
         // Agregar metodo para eliminar un proyecto
+        [HttpDelete("/delete/{projectId:guid}")]
+        public IActionResult Delete(Guid projectId)
+        {
+            try
+            {
+                return Ok(new
+                {
+                    ProjectId = projectId
+                });
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 }
