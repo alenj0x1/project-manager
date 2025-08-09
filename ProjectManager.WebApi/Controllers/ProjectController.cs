@@ -30,14 +30,11 @@ namespace ProjectManager.WebApi.Controllers
 
         // getById/ce5c4d95-dd15-4e8b-bb3a-7bf19c46f40a
         [HttpGet("/getById/{projectId:guid}")]
-        public IActionResult GetById(Guid projectId)
+        public GenericResponse<ProjectDto?> GetById(Guid projectId)
         {
             try
             {
-                return Ok(new
-                {
-                    ProjectId = projectId
-                });
+                return _projectService.GetById(projectId);
             }
             catch (Exception)
             {
@@ -48,14 +45,11 @@ namespace ProjectManager.WebApi.Controllers
 
         // Agregar metodo para actualizar un proyecto
         [HttpPut("/update/{projectId:guid}")]
-        public IActionResult Update(Guid projectId, UpdateProjectRequest request)
+        public GenericResponse<ProjectDto> Update(Guid projectId, UpdateProjectRequest request)
         {
             try
             {
-                return Ok(new
-                {
-                    ProjectId = projectId
-                });
+                return _projectService.Update(projectId, request);
             }
             catch (Exception)
             {
@@ -68,14 +62,11 @@ namespace ProjectManager.WebApi.Controllers
 
         // Agregar metodo para eliminar un proyecto
         [HttpDelete("/delete/{projectId:guid}")]
-        public IActionResult Delete(Guid projectId)
+        public GenericResponse<bool> Delete(Guid projectId)
         {
             try
             {
-                return Ok(new
-                {
-                    ProjectId = projectId
-                });
+                return _projectService.Delete(projectId);
             }
             catch (Exception)
             {

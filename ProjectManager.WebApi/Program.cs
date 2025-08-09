@@ -1,5 +1,7 @@
+using ProjectManager.Application.Dtos;
 using ProjectManager.Application.Interfaces.Services;
 using ProjectManager.Application.Services;
+using ProjectManager.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
+
+builder.Services.AddSingleton<Repository<ProjectDto>>();
+builder.Services.AddSingleton<Repository<TaskDto>>();
 
 var message = builder.Configuration["InitialConfiguration:User:Identification"];
 

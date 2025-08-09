@@ -1,7 +1,9 @@
-﻿using ProjectManager.Application.Dtos;
+﻿using Microsoft.Extensions.Configuration;
+using ProjectManager.Application.Dtos;
 using ProjectManager.Application.Interfaces.Services;
 using ProjectManager.Application.Models;
 using ProjectManager.Application.Models.Requests.Project;
+using ProjectManager.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,18 +12,18 @@ using System.Threading.Tasks;
 
 namespace ProjectManager.Application.Services
 {
-    public class ProjectService : IProjectService
+    public class ProjectService(Repository<ProjectDto> repositoryProjects) : IProjectService
     {
-        private List<ProjectDto> _projects = [];
+        private readonly Repository<ProjectDto> _repositoryProjects = repositoryProjects;
 
         public GenericResponse<ProjectDto> Create(CreateProjectRequest request)
         {
             try
             {
-                var getProject = _projects.Where(proj => proj.Name == request.Name).FirstOrDefault();
+                var getProject = _repositoryProjects.Queryable().Where(proj => proj.Name == request.Name).FirstOrDefault();
                 if (getProject is not null)
                 {
-                    throw new Exception("Proyecto creado previamente");
+                    throw new Exception(ResponseConsts.ProjectNotFound);
                 }
 
                 var createProject = new ProjectDto
@@ -34,13 +36,13 @@ namespace ProjectManager.Application.Services
                     CreatedAt = DateTime.Now
                 };
 
-                _projects.Add(createProject);
+                _repositoryProjects.Add(createProject);
 
                 return new GenericResponse<ProjectDto>
                 {
                     Data = createProject,
-                    Message = "Proyecto creado exitosamente",
-                    StatusCode = 201
+                    Message = ResponseConsts.ProjectCreated,
+                    StatusCode = ResponseHttpCodes.Created
                 };
             }
             catch (Exception)
@@ -54,8 +56,19 @@ namespace ProjectManager.Application.Services
         {
             try
             {
-                // ProyectoDto lo deben obtener de la Lista, usando FirstOrDefault()
-                // _projects.Remove(ProyectoDto);
+                var getProject = _repositoryProjects.Queryable().Where(proj => proj.ProjectId == projectId).FirstOrDefault();
+                if (getProject is null)
+                {
+                    throw new Exception(ResponseConsts.ProjectNotFound);
+                }
+
+                _repositoryProjects.Remove(getProject);
+
+                return new GenericResponse<bool>
+                {
+                   Data = true,
+                   Message = ResponseConsts.ProjectDeleted
+                };
             }
             catch (Exception)
             {
@@ -66,12 +79,51 @@ namespace ProjectManager.Application.Services
 
         public GenericResponse<ProjectDto?> GetById(Guid projectId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var getProject = _repositoryProjects.Queryable().Where(proj => proj.ProjectId == projectId).FirstOrDefault();
+
+                return new GenericResponse<ProjectDto?>
+                {
+                    Data = getProject,
+                    Message = ResponseConsts.ProjectSearchCompleted
+                };
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public GenericResponse<ProjectDto> Update(Guid projectId, UpdateProjectRequest request)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var getProject = _repositoryProjects.Queryable().Where(proj => proj.ProjectId == projectId).FirstOrDefault();
+                if (getProject is null)
+                {
+                    throw new Exception(ResponseConsts.ProjectNotFound);
+                }
+
+                getProject.Name = request.Name ?? getProject.Name;
+                getProject.Banner = request.Banner ?? getProject.Banner;
+                getProject.Description = request.Description ?? getProject.Description;
+                getProject.StatusId = request.StatusId ?? getProject.StatusId;
+
+                _repositoryProjects.Update(getProject);
+
+                return new GenericResponse<ProjectDto>
+                {
+                    Data = getProject,
+                    Message = ResponseConsts.ProjectUpdated
+                };
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }
