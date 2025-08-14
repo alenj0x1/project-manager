@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using ProjectManager.Application.Dtos;
 using ProjectManager.Application.Interfaces.Services;
 using ProjectManager.Application.Models;
 using ProjectManager.Application.Models.Requests.Project;
+using ProjectManager.Domain.Context;
 using ProjectManager.Utils;
 using System;
 using System.Collections.Generic;
@@ -12,14 +14,17 @@ using System.Threading.Tasks;
 
 namespace ProjectManager.Application.Services
 {
-    public class ProjectService(Repository<ProjectDto> repositoryProjects) : IProjectService
+    public class ProjectService(Repository<ProjectDto> repositoryProjects, PostgresContext context) : IProjectService
     {
         private readonly Repository<ProjectDto> _repositoryProjects = repositoryProjects;
+        private readonly PostgresContext _context = context;
 
         public GenericResponse<ProjectDto> Create(CreateProjectRequest request)
         {
             try
             {
+                var roles = _context.Roles.ToList();
+
                 var getProject = _repositoryProjects.Queryable().Where(proj => proj.Name == request.Name).FirstOrDefault();
                 if (getProject is not null)
                 {

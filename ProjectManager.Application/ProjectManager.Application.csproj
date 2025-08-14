@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ProjectManager.Domain\ProjectManager.Domain.csproj" />
     <ProjectReference Include="..\ProjectManager.Utils\ProjectManager.Utils.csproj" />
   </ItemGroup>
 

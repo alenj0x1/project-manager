@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ProjectManager.Application.Models.Requests.Project;
 using ProjectManager.Application.Dtos;
 using ProjectManager.Application.Models;
 using ProjectManager.Application.Interfaces.Services;
-using ProjectManager.Application.Services;
+using ProjectManager.Domain.Context;
 
 namespace ProjectManager.WebApi.Controllers
 {
