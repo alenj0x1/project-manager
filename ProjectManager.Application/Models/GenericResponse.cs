@@ -10,8 +10,9 @@ namespace ProjectManager.Application.Models
     public class GenericResponse<T>
     {
         public required T Data { get; set; }
-        public string Message { get; set; } = ResponseConsts.RequestCompleted;
-        public int StatusCode { get; set; } = ResponseHttpCodes.Success;
+        public required string Message { get; set; }
+        public required int StatusCode { get; set; }
+        public required int Count { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
     }
 }

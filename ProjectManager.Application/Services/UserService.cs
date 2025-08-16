@@ -11,25 +11,34 @@ using System.Linq;
 using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using ProjectManager.Application.Helpers;
+using ProjectManager.Utils;
 
 namespace ProjectManager.Application.Services
 {
-    public class UserService(IUserRepository userRepository) : IUserService
+    public class UserService(IUserRepository userRepository, IRoleRepository roleRepository) : IUserService
     {
         private readonly IUserRepository _userRepository = userRepository;
+        private readonly IRoleRepository _roleRepository = roleRepository;
 
         public async Task<GenericResponse<UserDto>> Create(CreateUserRequest request)
         {
             try
             {
-                if (_userRepository.IfExistsIdentification(request.Identification))
+                if (_userRepository.IfExistsByIdentification(request.Identification))
                 {
-                    throw new BadRequestException("Ya existe un usuario con la misma identificación");
+                    throw new BadRequestException(ResponseConsts.UserIdentificationExists);
                 }
 
-                if (_userRepository.IfExistsEmailAddress(request.EmailAddress))
+                if (_userRepository.IfExistsByEmailAddress(request.EmailAddress))
                 {
-                    throw new BadRequestException("Ya existe un usuario con la misma dirección de correo electrónico");
+                    throw new BadRequestException(ResponseConsts.UserEmailAddressExists);
+                }
+
+                if (_roleRepository.IfExists(request.RoleId) == false)
+                {
+                    throw new NotFoundException(ResponseConsts.RoleNotExists);
                 }
 
                 var createUser = new User
@@ -44,14 +53,10 @@ namespace ProjectManager.Application.Services
 
                 await _userRepository.Create(createUser);
 
-                return new GenericResponse<UserDto>(){
-                    Data = Map(createUser),
-                    Message = "Usuario creado correctamente!"
-                };
+                return ResponseHelper.Create(Map(createUser), message: ResponseConsts.UserCreated);
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
@@ -70,7 +75,8 @@ namespace ProjectManager.Application.Services
         {
             try
             {
-                var users = _userRepository.Queryable().ToList();
+                var users = _userRepository.Queryable()
+                    .Include(x => x.Role).ToList();
 
                 var mappedUsers = new List<UserDto>();
 
@@ -79,15 +85,14 @@ namespace ProjectManager.Application.Services
                     mappedUsers.Add(Map(user));
                 }
 
-                return new GenericResponse<List<UserDto>>()
-                {
-                    Data = mappedUsers,
-                    Message = "Listado de usuarios"
-                };
+                return ResponseHelper.Create(
+                    mappedUsers,
+                    message: ResponseConsts.UserList,
+                    count: _userRepository.Queryable().Count()
+                );
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
@@ -116,6 +121,11 @@ namespace ProjectManager.Application.Services
                     LastName = user.LastName,
                     IsActive = user.IsActive,
                     RoleId = user.RoleId,
+                    Role = new RoleDto
+                    {
+                        RoleId = user.Role.RoleId,
+                        Name = user.Role.Name
+                    },
                     CreatedAt = user.CreatedAt,
                     CreatedBy = user.CreatedBy,
                     UpdatedAt = user.UpdatedAt,
@@ -124,7 +134,6 @@ namespace ProjectManager.Application.Services
             }
             catch (Exception)
             {
-
                 throw;
             }
         }

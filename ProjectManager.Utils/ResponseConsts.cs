@@ -8,6 +8,19 @@ namespace ProjectManager.Utils
 {
     public static class ResponseConsts
     {
+        // Users
+        public const string UserEmailAddressExists =
+            "Ya existe un usuario con la misma dirección de correo electrónico";
+
+        public const string UserIdentificationExists =
+            "Ya existe un usuario con la misma dirección de correo electrónico";
+
+        public const string UserCreated = "Usuario creado correctamente";
+        public const string UserList = "Listado de usuarios";
+
+        // Roles
+        public const string RoleNotExists = "El rol no existe";
+
         // Projects
         public const string ProjectNotFound = "El proyecto no existe";
         public const string ProjectCreated = "Proyecto creado exitosamente";
@@ -23,6 +36,12 @@ namespace ProjectManager.Utils
 
         // General
         public const string RequestCompleted = "Solicitud completada con exito";
+        
+        // Middlewares
+        public const string MiddlewareErrorBadRequest = "400 Bad Request";
+        public const string MiddlewareErrorNotFound = "404 Not Found";
+        public const string MiddlewareErrorUnauthorized = "401 Unauthorized";
+        public const string MiddlewareErrorForbidden = "403 Forbidden";
+        public const string MiddlewareErrorInternalServerError = "500 Internal Server Error";
     }
-
 }

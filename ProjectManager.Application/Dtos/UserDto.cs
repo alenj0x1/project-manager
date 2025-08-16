@@ -15,6 +15,7 @@
         public bool IsActive { get; set; }
 
         public int RoleId { get; set; }
+        public RoleDto Role { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; }
         public Guid? CreatedBy { get; set; }
