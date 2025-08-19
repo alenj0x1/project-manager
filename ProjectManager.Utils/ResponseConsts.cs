@@ -33,9 +33,6 @@ namespace ProjectManager.Utils
         {
             return $"Tarea creada con exito en el proyecto: {projectName}";
         }
-
-        // General
-        public const string RequestCompleted = "Solicitud completada con exito";
         
         // Middlewares
         public const string MiddlewareErrorBadRequest = "400 Bad Request";
@@ -43,5 +40,15 @@ namespace ProjectManager.Utils
         public const string MiddlewareErrorUnauthorized = "401 Unauthorized";
         public const string MiddlewareErrorForbidden = "403 Forbidden";
         public const string MiddlewareErrorInternalServerError = "500 Internal Server Error";
+
+        // Jwt
+        public const string JwtSecretKeyNotArgumented = "No se argumentó la llave privada de JWT";
+        public const string JwtExpirationInMinutesNotArgumented = "No se argumentó la expiración para JWT";
+        public const string JwtAudienceNotArgumented = "No se argumentó la audiencia para JWT";
+        public const string JwtIssuerNotArguemented = "No se argumentó el Issuer para JWT";
+
+        // General
+        public const string RequestCompleted = "Solicitud completada con exito";
+        public static string ConfigurationArgumentNotFound(string property) => $"No se argumentó la siguiente propiedad {property} de la configuración";
     }
 }

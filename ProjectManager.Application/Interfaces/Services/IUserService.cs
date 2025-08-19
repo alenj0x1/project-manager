@@ -6,6 +6,8 @@ namespace ProjectManager.Application.Interfaces.Services
 {
     public interface IUserService
     {
+
+        Task FirstUser();
         Task<GenericResponse<UserDto>> Create(CreateUserRequest request);
         GenericResponse<UserDto?> Get(Guid userId);
         GenericResponse<UserDto?> Get(string emailAddress);

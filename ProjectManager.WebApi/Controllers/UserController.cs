@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectManager.Application.Dtos;
 using ProjectManager.Application.Interfaces.Services;
@@ -11,7 +12,8 @@ namespace ProjectManager.WebApi.Controllers;
 public class UserController(IUserService userService)
 {
     private readonly IUserService _userService = userService;
-    
+
+    [Authorize]
     [HttpPost("create")]
     public async Task<GenericResponse<UserDto>> Create([FromBody] CreateUserRequest request)
     {
@@ -25,7 +27,8 @@ public class UserController(IUserService userService)
             throw;
         }
     }
-    
+
+    [Authorize]
     [HttpGet("all")]
     public GenericResponse<List<UserDto>> GetAll()
     {

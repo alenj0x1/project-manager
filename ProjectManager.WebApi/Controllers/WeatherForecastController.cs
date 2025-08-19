@@ -1,33 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
+using ProjectManager.Application.Helpers;
+using ProjectManager.Domain.Context;
 
 namespace ProjectManager.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class WeatherForecastController(IConfiguration configuration) : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
-        private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
-        {
-            _logger = logger;
-        }
+        private readonly IConfiguration configuration = configuration;
 
         [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        public string Get()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            var user = new User
             {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+                UserId = Guid.NewGuid()
+            };
+
+            return TokenHelper.Create(user, configuration);
         }
     }
 }

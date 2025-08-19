@@ -18,6 +18,12 @@ public class ErrorHandlerMiddleware : IMiddleware
 
             await context.Response.WriteAsJsonAsync(ResponseHelper.Create(ResponseConsts.MiddlewareErrorBadRequest, message: e.Message));
         }
+        catch (ArgumentException e)
+        {
+            context.Response.StatusCode = ResponseHttpCodes.BadRequest;
+
+            await context.Response.WriteAsJsonAsync(ResponseHelper.Create(ResponseConsts.MiddlewareErrorBadRequest, message: e.Message));
+        }
         catch (NotFoundException e)
         {
             context.Response.StatusCode = ResponseHttpCodes.NotFound;
@@ -33,7 +39,6 @@ public class ErrorHandlerMiddleware : IMiddleware
         catch (Exception e)
         {
             context.Response.StatusCode = ResponseHttpCodes.InternalServerError;
-
             await context.Response.WriteAsJsonAsync(ResponseHelper.Create(ResponseConsts.MiddlewareErrorInternalServerError, message: e.Message));
         }
     }

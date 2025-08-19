@@ -21,6 +21,10 @@ namespace ProjectManager.Application.Models.Requests.User
         [MaxLength(60)]
         [MinLength(3)]
         public required string LastName { get; set; }
+        [Required]
+        [MaxLength(60)]
+        [MinLength(3)]
+        public required string Password { get; set; }
         public required int RoleId { get; set; }
     }
 }

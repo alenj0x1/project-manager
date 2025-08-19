@@ -14,13 +14,50 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ProjectManager.Application.Helpers;
 using ProjectManager.Utils;
+using Microsoft.Extensions.Configuration;
 
 namespace ProjectManager.Application.Services
 {
-    public class UserService(IUserRepository userRepository, IRoleRepository roleRepository) : IUserService
+    public class UserService(IUserRepository userRepository, IRoleRepository roleRepository, IConfiguration configuration) : IUserService
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IRoleRepository _roleRepository = roleRepository;
+        private readonly IConfiguration _configuration = configuration;
+
+        public async System.Threading.Tasks.Task FirstUser()
+        {
+            try
+            {
+                if (_userRepository.Queryable().Any())
+                {
+                    return;
+                }
+
+                var user = new User()
+                {
+                    FirstName = _configuration["InitialConfiguration:User:FirstName"] 
+                        ?? throw new ArgumentNotFoundException(ResponseConsts.ConfigurationArgumentNotFound("InitialConfiguration:User:FirstName")),
+                    LastName = _configuration["InitialConfiguration:User:LastName"]
+                        ?? throw new ArgumentNotFoundException(ResponseConsts.ConfigurationArgumentNotFound("InitialConfiguration:User:LastName")),
+                    EmailAddress = _configuration["InitialConfiguration:User:EmailAddress"]
+                        ?? throw new ArgumentNotFoundException(ResponseConsts.ConfigurationArgumentNotFound("InitialConfiguration:User:EmailAddress")),
+                    Identification = _configuration["InitialConfiguration:User:Identification"]
+                        ?? throw new ArgumentNotFoundException(ResponseConsts.ConfigurationArgumentNotFound("InitialConfiguration:User:Identification")),
+                    Password = Hasher.HashPassword(_configuration["InitialConfiguration:User:Password"] 
+                        ?? throw new ArgumentNotFoundException(ResponseConsts.ConfigurationArgumentNotFound("InitialConfiguration:User:Password"))),
+                    IsActive = true
+                };
+
+                await _userRepository.Create(user);
+
+                Console.WriteLine("Primer usuario creado con exito");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
 
         public async Task<GenericResponse<UserDto>> Create(CreateUserRequest request)
         {
@@ -47,7 +84,7 @@ namespace ProjectManager.Application.Services
                     EmailAddress = request.EmailAddress,
                     RoleId = request.RoleId,
                     FirstName = request.FirstName,
-                    Password = "1234",
+                    Password = Hasher.HashPassword(request.Password),
                     LastName = request.LastName
                 };
 
