@@ -3,6 +3,7 @@ using ProjectManager.Application.Helpers;
 using ProjectManager.Application.Interfaces.Services;
 using ProjectManager.Application.Models;
 using ProjectManager.Application.Models.Requests.Auth;
+using ProjectManager.Domain.Exceptions;
 using ProjectManager.Domain.Interfaces.Repositories;
 using ProjectManager.Utils;
 using System;
@@ -25,13 +26,18 @@ namespace ProjectManager.Application.Services
                 var getUser = _userRepository.Get(request.EmailAddress);
                 if (getUser == null)
                 {
-                    throw new UnauthorizedAccessException("Correo o contraseña incorrectos");
+                    throw new UnauthorizedException("Correo o contraseña incorrectos");
+                }
+
+                if (getUser.IsActive == false)
+                {
+                    throw new UnauthorizedException(ResponseConsts.UserDeactivated);
                 }
 
                 var comparePassword = Hasher.ComparePassword(request.Password, getUser.Password);
                 if (comparePassword == false)
                 {
-                    throw new UnauthorizedAccessException("Correo o contraseña incorrectos");
+                    throw new UnauthorizedException("Correo o contraseña incorrectos");
                 }
 
                 return ResponseHelper.Create(TokenHelper.Create(getUser, _configuration), message: "Inició sesión correctamente");

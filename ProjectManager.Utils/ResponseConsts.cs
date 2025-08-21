@@ -17,6 +17,8 @@ namespace ProjectManager.Utils
 
         public const string UserCreated = "Usuario creado correctamente";
         public const string UserList = "Listado de usuarios";
+        public const string UserNotFound = "El usuario no existe";
+        public const string UserDeactivated = "No puede iniciar sesión en este momento, contacte con un administrador";
 
         // Roles
         public const string RoleNotExists = "El rol no existe";
@@ -50,5 +52,9 @@ namespace ProjectManager.Utils
         // General
         public const string RequestCompleted = "Solicitud completada con exito";
         public static string ConfigurationArgumentNotFound(string property) => $"No se argumentó la siguiente propiedad {property} de la configuración";
+
+        public const string UnauthorizedAccessForExecuteThisAction = "No tiene acceso para realizar esta acción";
+        public const string UserIdentityNotFound = "Imposible validar la identidad del usuario";
+        public const string UserRoleNotFound = "Imposible obtener el rol del usuario";
     }
 }

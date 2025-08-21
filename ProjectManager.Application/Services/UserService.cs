@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using ProjectManager.Application.Helpers;
 using ProjectManager.Utils;
 using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
 
 namespace ProjectManager.Application.Services
 {
@@ -59,10 +60,12 @@ namespace ProjectManager.Application.Services
             }
         }
 
-        public async Task<GenericResponse<UserDto>> Create(CreateUserRequest request)
+        public async Task<GenericResponse<UserDto>> Create(CreateUserRequest request, Claim claim)
         {
             try
             {
+                var executor = GetExecutor(claim);
+
                 if (_userRepository.IfExistsByIdentification(request.Identification))
                 {
                     throw new BadRequestException(ResponseConsts.UserIdentificationExists);
@@ -78,18 +81,19 @@ namespace ProjectManager.Application.Services
                     throw new NotFoundException(ResponseConsts.RoleNotExists);
                 }
 
-                var createUser = new User
+                var createUser = await _userRepository.Create(new User
                 {
                     Identification = request.Identification,
                     EmailAddress = request.EmailAddress,
                     RoleId = request.RoleId,
                     FirstName = request.FirstName,
                     Password = Hasher.HashPassword(request.Password),
-                    LastName = request.LastName
-                };
+                    LastName = request.LastName,
+                    CreatedBy = executor.UserId,
+                    UpdatedBy = executor.UserId
+                });
 
-                await _userRepository.Create(createUser);
-
+                createUser = _userRepository.Get(createUser.UserId) ?? throw new Exception(ResponseConsts.UserIdentityNotFound);
                 return ResponseHelper.Create(Map(createUser), message: ResponseConsts.UserCreated);
             }
             catch (Exception)
@@ -98,14 +102,46 @@ namespace ProjectManager.Application.Services
             }
         }
 
-        public GenericResponse<UserDto?> Get(Guid userId)
+        public GenericResponse<UserDto> Get(Guid userId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var user = _userRepository.Get(userId);
+                if (user == null)
+                {
+                    throw new NotFoundException(ResponseConsts.UserNotFound);
+                }
+
+
+                var mapped = Map(user);
+                return ResponseHelper.Create(mapped);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
-        public GenericResponse<UserDto?> Get(string emailAddress)
+        public GenericResponse<UserDto> Get(string emailAddress)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var user = _userRepository.Get(emailAddress);
+                if (user == null)
+                {
+                    throw new NotFoundException(ResponseConsts.UserNotFound);
+                }
+
+
+                var mapped = Map(user);
+                return ResponseHelper.Create(mapped);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public GenericResponse<List<UserDto>> Get()
@@ -134,14 +170,94 @@ namespace ProjectManager.Application.Services
             }
         }
 
-        public Task<GenericResponse<bool>> Remove(Guid userId)
+        public async Task<GenericResponse<bool>> Remove(Guid userId, Claim claim)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var executor = GetExecutor(claim);
+
+                var user = _userRepository.Get(userId) ?? throw new NotFoundException(ResponseConsts.UserNotFound);
+
+                await _userRepository.Delete(user);
+
+                return ResponseHelper.Create(true);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
-        public Task<GenericResponse<UserDto>> Update(Guid userId, UpdateUserRequest request)
+        public async Task<GenericResponse<UserDto>> Update(Guid userId, UpdateUserRequest request, Claim claim)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var executor = GetExecutor(claim);
+
+                var user = _userRepository.Get(userId) ?? throw new NotFoundException(ResponseConsts.UserNotFound);
+
+                if (
+                    request.Identification is not null && 
+                    request.Identification != user.Identification && 
+                    _userRepository.IfExistsByIdentification(request.Identification)
+                )
+                {
+                    throw new BadRequestException(ResponseConsts.UserIdentificationExists);
+                }
+
+                if (request.EmailAddress is not null &&
+                    request.EmailAddress != user.EmailAddress && 
+                    _userRepository.IfExistsByEmailAddress(request.EmailAddress)
+                )
+                {
+                    throw new BadRequestException(ResponseConsts.UserEmailAddressExists);
+                }
+
+                if (request.RoleId.HasValue &&
+                    request.RoleId.Value != user.RoleId && 
+                    _roleRepository.IfExists(request.RoleId.Value) == false
+                )
+                {
+                    throw new NotFoundException(ResponseConsts.RoleNotExists);
+                }
+
+                user.Identification = request.Identification ?? user.Identification;
+                user.EmailAddress = request.EmailAddress ?? user.EmailAddress;
+                user.RoleId = request.RoleId ?? user.RoleId;
+                user.FirstName = request.FirstName ?? user.FirstName;
+                user.LastName = request.LastName ?? user.LastName;
+
+                // Auditoria
+                user.UpdatedAt = DateTime.UtcNow;
+                user.UpdatedBy = executor.UserId;
+
+                await _userRepository.Update(user);
+
+                user = _userRepository.Get(user.UserId) ?? throw new Exception(ResponseConsts.UserIdentityNotFound);
+                return ResponseHelper.Create(Map(user), message: ResponseConsts.UserCreated);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private User GetExecutor(Claim claim)
+        {
+            try
+            {
+                var executorId = Parser.ToGuid(claim.Value) ?? throw new ArgumentNotFoundException(ResponseConsts.UserIdentityNotFound);
+                var executor = _userRepository.Get(executorId) ?? throw new ArgumentException(ResponseConsts.UserIdentityNotFound);
+
+                return executor;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         private static UserDto Map(User user)

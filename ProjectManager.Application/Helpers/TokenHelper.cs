@@ -15,11 +15,13 @@ namespace ProjectManager.Application.Helpers
         {
 			try
 			{
+				var userRoleName = user.Role.Name ?? throw new ArgumentNullException(ResponseConsts.UserRoleNotFound);
+
 				// Propiedades adicionales adjuntas a nuestro token JWT
 				var claims = new[]
 				{
 					new Claim("UserId", user.UserId.ToString()),
-					new Claim("Message", "Hello world!")
+					new Claim(ClaimTypes.Role, userRoleName)
 				};
 
 				var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"] ?? throw new TokenHelperJwtException(ResponseConsts.JwtSecretKeyNotArgumented)));

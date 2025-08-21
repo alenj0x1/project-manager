@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using ProjectManager.Domain.Context;
 using ProjectManager.Domain.Interfaces.Repositories;
 using Task = System.Threading.Tasks.Task;
@@ -28,7 +29,7 @@ public class UserRepository(PostgresContext context) : IUserRepository
     {
         try
         {
-            return _context.Users.FirstOrDefault(x => x.UserId == userId);
+            return _context.Users.Include(user => user.Role).FirstOrDefault(x => x.UserId == userId);
         }
         catch (Exception e)
         {
@@ -41,7 +42,7 @@ public class UserRepository(PostgresContext context) : IUserRepository
     {
         try
         {
-            return _context.Users.FirstOrDefault(x => x.EmailAddress == emailAddress);
+            return _context.Users.Include(user => user.Role).FirstOrDefault(x => x.EmailAddress == emailAddress);
         }
         catch (Exception e)
         {

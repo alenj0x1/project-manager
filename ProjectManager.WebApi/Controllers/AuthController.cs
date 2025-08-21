@@ -12,7 +12,7 @@ namespace ProjectManager.WebApi.Controllers
     {
         private readonly IAuthService _authService = authService;
 
-        [HttpPost]
+        [HttpPost("login")]
         public GenericResponse<string> Login([FromBody] LoginAuthRequest request)
         {
             try
