@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using ProjectManager.Application.Helpers;
 using ProjectManager.Application.Interfaces.Services;
 using ProjectManager.Application.Models;
@@ -14,10 +15,11 @@ using System.Threading.Tasks;
 
 namespace ProjectManager.Application.Services
 {
-    public class AuthService(IUserRepository userRepository, IConfiguration configuration) : IAuthService
+    public class AuthService(IUserRepository userRepository, IConfiguration configuration, ILogger<IAuthService> logger) : IAuthService
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IConfiguration _configuration = configuration;
+        private readonly ILogger<IAuthService> _logger = logger;
 
         public GenericResponse<string> Login(LoginAuthRequest request)
         {
@@ -40,10 +42,13 @@ namespace ProjectManager.Application.Services
                     throw new UnauthorizedException("Correo o contraseña incorrectos");
                 }
 
+                _logger.LogInformation("Usuario inició sesión: {UserId}", getUser.UserId);
+
                 return ResponseHelper.Create(TokenHelper.Create(getUser, _configuration), message: "Inició sesión correctamente");
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
                 throw;
             }
         }

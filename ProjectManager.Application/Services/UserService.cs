@@ -86,6 +86,7 @@ namespace ProjectManager.Application.Services
                     Identification = request.Identification,
                     EmailAddress = request.EmailAddress,
                     RoleId = request.RoleId,
+                    Role = _roleRepository.Get(request.RoleId) ?? throw new Exception("Imposible obtener el rol del usuario"),
                     FirstName = request.FirstName,
                     Password = Hasher.HashPassword(request.Password),
                     LastName = request.LastName,
@@ -93,7 +94,6 @@ namespace ProjectManager.Application.Services
                     UpdatedBy = executor.UserId
                 });
 
-                createUser = _userRepository.Get(createUser.UserId) ?? throw new Exception(ResponseConsts.UserIdentityNotFound);
                 return ResponseHelper.Create(Map(createUser), message: ResponseConsts.UserCreated);
             }
             catch (Exception)
@@ -228,13 +228,14 @@ namespace ProjectManager.Application.Services
                 user.FirstName = request.FirstName ?? user.FirstName;
                 user.LastName = request.LastName ?? user.LastName;
 
+                // Añadimos una entidad adicional, en este caso, Role
+                user.Role = _roleRepository.Get(user.RoleId) ?? throw new Exception("Imposible obtener el rol del usuario");
+
                 // Auditoria
                 user.UpdatedAt = DateTime.UtcNow;
                 user.UpdatedBy = executor.UserId;
 
                 await _userRepository.Update(user);
-
-                user = _userRepository.Get(user.UserId) ?? throw new Exception(ResponseConsts.UserIdentityNotFound);
                 return ResponseHelper.Create(Map(user), message: ResponseConsts.UserCreated);
             }
             catch (Exception)

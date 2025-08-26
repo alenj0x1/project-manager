@@ -8,6 +8,7 @@ using ProjectManager.Domain.Interfaces.Repositories;
 using ProjectManager.Domain.Repositories;
 using ProjectManager.Utils;
 using ProjectManager.WebApi.Middlewares;
+using Serilog;
 
 namespace ProjectManager.WebApi.Extensions;
 
@@ -15,8 +16,14 @@ public static class ServicesExtension
 {
     public static async System.Threading.Tasks.Task DependencyInjection(this IServiceCollection services, IConfiguration configuration)
     {
-        // Add services to the container.
+        // Add services to the container
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .WriteTo.File(Path.Combine(Directory.GetCurrentDirectory(), "logs", "log.txt"), rollingInterval: RollingInterval.Day)
+            .CreateLogger();
 
+
+        services.AddSerilog();
         services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();

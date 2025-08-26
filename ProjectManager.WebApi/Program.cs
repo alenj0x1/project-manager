@@ -1,9 +1,13 @@
 using ProjectManager.WebApi.Extensions;
 using ProjectManager.WebApi.Middlewares;
 
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.DependencyInjection(builder.Configuration);
+builder.Host.UseSerilog();
+
+await builder.Services.DependencyInjection(builder.Configuration);
 
 var app = builder.Build();
 

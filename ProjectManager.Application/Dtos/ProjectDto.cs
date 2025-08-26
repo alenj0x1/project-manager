@@ -11,4 +11,6 @@ public class ProjectDto
     public Guid CreatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
     public Guid UpdatedBy { get; set; }
+    public List<TaskDto> Tasks { get; set; } = null!;
+    public List<UserDto> Members { get; set; } = null!;
 }
