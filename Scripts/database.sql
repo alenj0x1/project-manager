@@ -49,18 +49,6 @@ values
 ('En proceso'),
 ('Completado');
 
--- Rol: Cualquiera
-create table tasks (
-  task_id uuid not null primary key default(gen_random_uuid()),
-  name varchar(50) not null,
-  description text not null,
-  status_id int not null references tasks_statuses(task_status_id) default(1),
-  created_at timestamptz not null default(now()),
-  created_by uuid not null references users(user_id),
-  updated_at timestamptz not null default(now()),
-  updated_by uuid not null references users(user_id)
-);
-
 -- Rol: Administrador
 create table projects (
   project_id uuid not null primary key default(gen_random_uuid()),
@@ -78,13 +66,6 @@ create table projects_users (
   project_user_id serial not null primary key,
   project_id uuid not null references projects(project_id) on delete cascade,
   user_id uuid not null references users(user_id),
-  added_at timestamptz not null default(now())
-);
-
-create table projects_tasks (
-  project_task_id serial not null primary key,
-  project_id uuid not null references projects(project_id) on delete cascade,
-  task_id uuid not null references tasks(task_id),
   added_at timestamptz not null default(now())
 );
 
