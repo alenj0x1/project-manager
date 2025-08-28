@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using ProjectManager.Domain.Context;
 using ProjectManager.Domain.Interfaces.Repositories;
 
@@ -58,7 +59,11 @@ public class ProjectRepository(PostgresContext context) : IProjectRepository
     {
         try
         {
-            return _context.Projects.FirstOrDefault(x => x.ProjectId == projectId);
+            return _context.Projects
+                .Include(x => x.ProjectsUsers)
+                .ThenInclude(y => y.User)
+                .Include(x => x.Tasks)
+                .FirstOrDefault(x => x.ProjectId == projectId);
         }
         catch (Exception e)
         {
@@ -71,7 +76,11 @@ public class ProjectRepository(PostgresContext context) : IProjectRepository
     {
         try
         {
-            return _context.Projects.AsQueryable();
+            return _context.Projects
+                .Include(x => x.ProjectsUsers)
+                .ThenInclude(y => y.User)
+                .Include(x => x.Tasks)
+                .AsQueryable();
         }
         catch (Exception e)
         {
@@ -86,6 +95,19 @@ public class ProjectRepository(PostgresContext context) : IProjectRepository
         try
         {
             return _context.ProjectsStatuses.Any(x => x.ProjectStatusId == projectStatusId);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    public bool IfIsMemberForProject(Guid projectId, Guid userId)
+    {
+        try
+        {
+            return _context.ProjectsUsers.Any(x => x.ProjectId == projectId && x.UserId == userId);
         }
         catch (Exception e)
         {

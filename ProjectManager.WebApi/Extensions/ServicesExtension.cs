@@ -56,6 +56,7 @@ public static class ServicesExtension
         // Services
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IProjectService, ProjectService>();
 
         // Context
         services.AddNpgsql<PostgresContext>(configuration.GetConnectionString("Postgres") ??
@@ -65,6 +66,8 @@ public static class ServicesExtension
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<ITaskRepository, TaskRepository>();
 
         // Initialization
         using var scope = services.BuildServiceProvider();

@@ -29,12 +29,14 @@ namespace ProjectManager.Utils
         public const string ProjectUpdated = "Proyecto actualizado correctamente";
         public const string ProjectDeleted = "Eliminación de proyecto realizada correctamente";
         public const string ProjectSearchCompleted = "Busqueda realizada correctamente";
+        public const string ProjectStatusNotFound = "El estado del proyecto no existe";
 
         // Tasks
         public static string TaskCreated(string projectName)
         {
             return $"Tarea creada con exito en el proyecto: {projectName}";
         }
+        public const string TaskNotFound = "La tarea no existe";
         
         // Middlewares
         public const string MiddlewareErrorBadRequest = "400 Bad Request";

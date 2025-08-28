@@ -13,4 +13,6 @@ public interface IProjectRepository
 
     // Project status
     bool IfExistsProjectStatus(int projectStatusId);
+    // Project members
+    bool IfIsMemberForProject(Guid projectId, Guid userId);
 }

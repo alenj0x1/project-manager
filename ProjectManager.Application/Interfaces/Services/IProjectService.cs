@@ -12,13 +12,13 @@ public interface IProjectService
     Task<GenericResponse<ProjectDto>> Create(Claim claim, CreateProjectRequest request);
     Task<GenericResponse<ProjectDto>> Update(Guid projectId, Claim claim,  UpdateProjectRequest request);
     Task<GenericResponse<bool>> Remove(Claim claim, Guid projectId);
-    GenericResponse<ProjectDto?> Get(Guid projectId);
-    GenericResponse<List<ProjectDto>> Get();
+    GenericResponse<ProjectDto> Get(Guid projectId);
+    GenericResponse<List<ProjectDto>> Get(GetProjectRequest request);
     // Project Member
     Task<GenericResponse<ProjectDto>> AddMember(Claim claim, Guid projectId, Guid userId);
     Task<GenericResponse<ProjectDto>> RemoveMember(Claim claim, Guid projectId, Guid userId);
     // Task
-    GenericResponse<ProjectDto> CreateTask(Guid projectId, Claim claim, CreateTaskRequest request);
+    Task<GenericResponse<ProjectDto>> CreateTask(Guid projectId, Claim claim, CreateTaskRequest request);
     GenericResponse<ProjectDto> ChangeTaskStatus(Guid projectId, int taskId, Claim claim, int statusId);
     GenericResponse<ProjectDto> RemoveTask(Guid projectId, int taskId, Claim claim);
     // Task Member
