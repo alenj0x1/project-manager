@@ -1,9 +1,11 @@
 using ProjectManager.WebApi.Extensions;
 using ProjectManager.WebApi.Middlewares;
-
+using ProjectManager.Worker;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHostedService<Worker>();
 
 builder.Host.UseSerilog();
 

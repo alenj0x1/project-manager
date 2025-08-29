@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ProjectManager.Application\ProjectManager.Application.csproj" />
     <ProjectReference Include="..\ProjectManager.Domain\ProjectManager.Domain.csproj" />
+    <ProjectReference Include="..\ProjectManager.Worker\ProjectManager.Worker.csproj" />
   </ItemGroup>
 
 </Project>

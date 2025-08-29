@@ -36,6 +36,17 @@ namespace ProjectManager.Utils
         {
             return $"Tarea creada con exito en el proyecto: {projectName}";
         }
+        public static string TaskDeleted(string projectName)
+        {
+            return $"Tarea eliminada con exito en el proyecto: {projectName}";
+        }
+        public static string TaskAssigned(string firstName, string lastName)
+        {
+            return $"Tarea asignada con exito al usuario: {firstName} {lastName}";
+        }
+        public const string TaskUnassigned = "El usuario ahora no tiene asignada esta tarea";
+        public const string TaskUpdated = "La tarea fue actualizada correctamente";
+
         public const string TaskNotFound = "La tarea no existe";
         
         // Middlewares

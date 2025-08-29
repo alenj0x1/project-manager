@@ -28,7 +28,7 @@ namespace ProjectManager.WebApi.Controllers
                 var claim = User.FindFirst("UserId")
                     ?? throw new UnauthorizedAccessException(ResponseConsts.UserIdentityNotFound);
 
-                return await _projectService.Create(claim, request);
+                return await _projectService.CreateAsync(claim, request);
             }
             catch (Exception e)
             {
@@ -46,7 +46,7 @@ namespace ProjectManager.WebApi.Controllers
                 var claim = User.FindFirst("UserId")
                     ?? throw new UnauthorizedAccessException(ResponseConsts.UserIdentityNotFound);
 
-                return await _projectService.Update(projectId, claim, request);
+                return await _projectService.UpdateAsync(projectId, claim, request);
             }
             catch (Exception e)
             {
@@ -64,7 +64,7 @@ namespace ProjectManager.WebApi.Controllers
                 var claim = User.FindFirst("UserId")
                     ?? throw new UnauthorizedAccessException(ResponseConsts.UserIdentityNotFound);
 
-                return await _projectService.Remove(claim, projectId);
+                return await _projectService.RemoveAsync(claim, projectId);
             }
             catch (Exception e)
             {
@@ -119,10 +119,11 @@ namespace ProjectManager.WebApi.Controllers
                 var claim = User.FindFirst("UserId")
                     ?? throw new UnauthorizedAccessException(ResponseConsts.UserIdentityNotFound);
 
-                return await _projectService.AddMember(claim, projectId, userId);
+                return await _projectService.AddMemberAsync(claim, projectId, userId);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
                 throw;
             }
         }
@@ -136,14 +137,16 @@ namespace ProjectManager.WebApi.Controllers
                 var claim = User.FindFirst("UserId")
                     ?? throw new UnauthorizedAccessException(ResponseConsts.UserIdentityNotFound);
 
-                return await _projectService.RemoveMember(claim, projectId, userId);
+                return await _projectService.RemoveMemberAsync(claim, projectId, userId);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
                 throw;
             }
         }
 
+        // Task
         [HttpPost("{projectId:guid}/tasks/create")]
         [Authorize(Roles = UserTypeConsts.Administrator)]
         public async Task<GenericResponse<ProjectDto>> CreateTask(Guid projectId, [FromBody] CreateTaskRequest request)
@@ -153,10 +156,83 @@ namespace ProjectManager.WebApi.Controllers
                 var claim = User.FindFirst("UserId")
                     ?? throw new UnauthorizedAccessException(ResponseConsts.UserIdentityNotFound);
 
-                return await _projectService.CreateTask(projectId, claim, request);
+                return await _projectService.CreateTaskAsync(projectId, claim, request);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
+                throw;
+            }
+        }
+
+        [HttpPut("{projectId:guid}/tasks/{taskId:guid}/changeStatus/{statusId:int}")]
+        [Authorize]
+        public async Task<GenericResponse<ProjectDto>> ChangeTaskStatusAsync(Guid projectId, Guid taskId, int statusId)
+        {
+            try
+            {
+                var claim = User.FindFirst("UserId")
+                    ?? throw new UnauthorizedAccessException(ResponseConsts.UserIdentityNotFound);
+
+                return await _projectService.ChangeTaskStatusAsync(projectId, taskId, claim, statusId);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
+                throw;
+            }
+        }
+
+        [HttpDelete("{projectId:guid}/tasks/{taskId:guid}/remove")]
+        [Authorize(Roles = UserTypeConsts.Administrator)]
+        public async Task<GenericResponse<ProjectDto>> RemoveTaskAsync(Guid projectId, Guid taskId)
+        {
+            try
+            {
+                var claim = User.FindFirst("UserId")
+                    ?? throw new UnauthorizedAccessException(ResponseConsts.UserIdentityNotFound);
+
+                return await _projectService.RemoveTaskAsync(projectId, taskId, claim);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
+                throw;
+            }
+        }
+
+        [HttpPut("{projectId:guid}/tasks/{taskId:guid}/members/assign/{userAssignId:guid}")]
+        [Authorize(Roles = UserTypeConsts.Administrator)]
+        public async Task<GenericResponse<ProjectDto>> AssignTaskToMember(Guid projectId, Guid taskId, Guid userAssignId)
+        {
+            try
+            {
+                var claim = User.FindFirst("UserId")
+                    ?? throw new UnauthorizedAccessException(ResponseConsts.UserIdentityNotFound);
+
+                return await _projectService.AssignTaskToMemberAsync(projectId, taskId, claim, userAssignId);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
+                throw;
+            }
+        }
+
+        [HttpPut("{projectId:guid}/tasks/{taskId:guid}/members/unassign")]
+        [Authorize(Roles = UserTypeConsts.Administrator)]
+        public async Task<GenericResponse<ProjectDto>> UnassignTaskToMember(Guid projectId, Guid taskId)
+        {
+            try
+            {
+                var claim = User.FindFirst("UserId")
+                    ?? throw new UnauthorizedAccessException(ResponseConsts.UserIdentityNotFound);
+
+                return await _projectService.UnassignTaskToMemberAsync(projectId, taskId, claim);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
                 throw;
             }
         }

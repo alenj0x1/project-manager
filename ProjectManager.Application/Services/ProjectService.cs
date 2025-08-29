@@ -27,7 +27,7 @@ public class ProjectService(
     private readonly ITaskRepository _taskRepository = taskRepository;
     private readonly ILogger<IProjectService> _logger = logger;
 
-    public async Task<GenericResponse<ProjectDto>> Create(Claim claim, CreateProjectRequest request)
+    public async Task<GenericResponse<ProjectDto>> CreateAsync(Claim claim, CreateProjectRequest request)
     {
         try
         {
@@ -66,7 +66,7 @@ public class ProjectService(
         }
     }
 
-    public async Task<GenericResponse<ProjectDto>> Update(Guid projectId, Claim claim, UpdateProjectRequest request)
+    public async Task<GenericResponse<ProjectDto>> UpdateAsync(Guid projectId, Claim claim, UpdateProjectRequest request)
     {
         try
         {
@@ -98,7 +98,7 @@ public class ProjectService(
         }
     }
 
-    public async Task<GenericResponse<bool>> Remove(Claim claim, Guid projectId)
+    public async Task<GenericResponse<bool>> RemoveAsync(Claim claim, Guid projectId)
     {
         try
         {
@@ -228,7 +228,7 @@ public class ProjectService(
         }
     }
 
-    public async Task<GenericResponse<ProjectDto>> AddMember(Claim claim, Guid projectId, Guid userId)
+    public async Task<GenericResponse<ProjectDto>> AddMemberAsync(Claim claim, Guid projectId, Guid userId)
     {
         try
         {
@@ -260,7 +260,7 @@ public class ProjectService(
         }
     }
 
-    public async Task<GenericResponse<ProjectDto>> RemoveMember(Claim claim, Guid projectId, Guid userId)
+    public async Task<GenericResponse<ProjectDto>> RemoveMemberAsync(Claim claim, Guid projectId, Guid userId)
     {
         try
         {
@@ -307,6 +307,22 @@ public class ProjectService(
         }
     }
 
+    private Domain.Context.Task GetTask(Guid projectId, Guid taskId)
+    {
+        try
+        {
+            var task = _taskRepository.Get(projectId, taskId)
+                ?? throw new NotFoundException("La tarea no existe o no pertenece al proyecto");
+
+            return task;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
     private Project GetProject(Guid projectId)
     {
         try
@@ -323,14 +339,27 @@ public class ProjectService(
         }
     }
 
-    public async Task<GenericResponse<ProjectDto>> CreateTask(Guid projectId, Claim claim, CreateTaskRequest request)
+    private void IfExistsTaskStatus(int statusId)
     {
         try
         {
-            if (_taskRepository.IfExistsTaskStatus(request.StatusId) == false)
+            if (_taskRepository.IfExistsTaskStatus(statusId) == false)
             {
                 throw new NotFoundException(ResponseConsts.TaskNotFound);
             }
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    public async Task<GenericResponse<ProjectDto>> CreateTaskAsync(Guid projectId, Claim claim, CreateTaskRequest request)
+    {
+        try
+        {
+            // Validación de estado de tarea
+            IfExistsTaskStatus(request.StatusId);
 
             var executor = GetExecutor(claim);
             var project = GetProject(projectId);
@@ -356,23 +385,122 @@ public class ProjectService(
         }
     }
 
-    public GenericResponse<ProjectDto> ChangeTaskStatus(Guid projectId, int taskId, Claim claim, int statusId)
+    public async Task<GenericResponse<ProjectDto>> RemoveTaskAsync(Guid projectId, Guid taskId, Claim claim)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var project = GetProject(projectId);
+            var task = GetTask(projectId, taskId);
+
+            await _taskRepository.Remove(task);
+
+            return ResponseHelper.Create(Map(project), message: ResponseConsts.TaskDeleted(project.Name), statusCode: ResponseHttpCodes.Success);
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
+            throw;
+        }
     }
 
-    public GenericResponse<ProjectDto> RemoveTask(Guid projectId, int taskId, Claim claim)
+    public async Task<GenericResponse<ProjectDto>> AssignTaskToMemberAsync(Guid projectId, Guid taskId, Claim claim, Guid userAssignId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var executor = GetExecutor(claim);
+            var project = GetProject(projectId);
+            var task = GetTask(projectId, taskId);
+
+            if (task.UserId is not null)
+            {
+                throw new BadRequestException("Esta tarea ya fue previamente a un usuario");
+            }
+
+            var userAssign = _userRepository.Get(userAssignId)
+                ?? throw new NotFoundException("El usuario al que le intenta asignar esta tarea, no existe");
+
+            task.UserId = userAssignId;
+            task.UpdatedBy = executor.UserId;
+            task.UpdatedAt = DateTime.UtcNow;
+
+            await _taskRepository.Update(task);
+
+            return ResponseHelper.Create(Map(project), message: ResponseConsts.TaskAssigned(userAssign.FirstName ?? "", userAssign.LastName ?? ""), statusCode: ResponseHttpCodes.Success);
+        }
+        catch (Exception e) 
+        {
+            _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
+            throw;
+        }
     }
 
-    public GenericResponse<ProjectDto> AssignTaskToMember(Guid projectId, int taskId, Claim claim, Guid userAssignId)
+    public async Task<GenericResponse<ProjectDto>> UnassignTaskToMemberAsync(Guid projectId, Guid taskId, Claim claim)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var executor = GetExecutor(claim);
+            var project = GetProject(projectId);
+            var task = GetTask(projectId, taskId);
+
+            if (task.UserId is null)
+            {
+                throw new BadRequestException("Esta tarea no ha sido asignada a un usuario");
+            }
+
+            task.UserId = null;
+            task.UpdatedBy = executor.UserId;
+            task.UpdatedAt = DateTime.UtcNow;
+
+            await _taskRepository.Update(task);
+
+            return ResponseHelper.Create(Map(project), message: ResponseConsts.TaskUnassigned, statusCode: ResponseHttpCodes.Success);
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
+            throw;
+        }
     }
 
-    public GenericResponse<ProjectDto> UnassignTaskToMember(Guid projectId, int taskId, Claim claim, Guid userAssignId)
+    public async Task<GenericResponse<ProjectDto>> ChangeTaskStatusAsync(Guid projectId, Guid taskId, Claim claim, int statusId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            // Validación de estado de tarea
+            IfExistsTaskStatus(statusId);
+
+            var executor = GetExecutor(claim);
+            var project = GetProject(projectId);
+            var task = GetTask(projectId, taskId);
+
+            if (task.UserId is null)
+            {
+                throw new BadRequestException("La tarea no ha sido asignada a un usuario");
+            }
+
+            // Validacion por asignacion de usuario
+            if (task.UserId != executor.UserId)
+            {
+                throw new BadRequestException("El único que puede cambiar el estado de una tarea, es el usuario asignado");
+            }
+
+            if (task.StatusId == statusId)
+            {
+                throw new BadRequestException("El estado que intenta asignar, ya fue asignado previamente");
+            }
+
+            task.StatusId = statusId;
+            task.UpdatedBy = executor.UserId;
+            task.UpdatedAt = DateTime.UtcNow;
+
+            await _taskRepository.Update(task);
+
+            return ResponseHelper.Create(Map(project), message: ResponseConsts.TaskUpdated, statusCode: ResponseHttpCodes.Updated);
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning("{ExceptionMessage} {ExceptionStackTrace}", e.Message, e.StackTrace);
+            throw;
+        }
     }
 }

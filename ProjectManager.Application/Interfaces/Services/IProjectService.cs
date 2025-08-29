@@ -9,19 +9,19 @@ namespace ProjectManager.Application.Interfaces.Services;
 public interface IProjectService
 {
     // Project
-    Task<GenericResponse<ProjectDto>> Create(Claim claim, CreateProjectRequest request);
-    Task<GenericResponse<ProjectDto>> Update(Guid projectId, Claim claim,  UpdateProjectRequest request);
-    Task<GenericResponse<bool>> Remove(Claim claim, Guid projectId);
+    Task<GenericResponse<ProjectDto>> CreateAsync(Claim claim, CreateProjectRequest request);
+    Task<GenericResponse<ProjectDto>> UpdateAsync(Guid projectId, Claim claim,  UpdateProjectRequest request);
+    Task<GenericResponse<bool>> RemoveAsync(Claim claim, Guid projectId);
     GenericResponse<ProjectDto> Get(Guid projectId);
     GenericResponse<List<ProjectDto>> Get(GetProjectRequest request);
     // Project Member
-    Task<GenericResponse<ProjectDto>> AddMember(Claim claim, Guid projectId, Guid userId);
-    Task<GenericResponse<ProjectDto>> RemoveMember(Claim claim, Guid projectId, Guid userId);
+    Task<GenericResponse<ProjectDto>> AddMemberAsync(Claim claim, Guid projectId, Guid userId);
+    Task<GenericResponse<ProjectDto>> RemoveMemberAsync(Claim claim, Guid projectId, Guid userId);
     // Task
-    Task<GenericResponse<ProjectDto>> CreateTask(Guid projectId, Claim claim, CreateTaskRequest request);
-    GenericResponse<ProjectDto> ChangeTaskStatus(Guid projectId, int taskId, Claim claim, int statusId);
-    GenericResponse<ProjectDto> RemoveTask(Guid projectId, int taskId, Claim claim);
+    Task<GenericResponse<ProjectDto>> CreateTaskAsync(Guid projectId, Claim claim, CreateTaskRequest request);
+    Task<GenericResponse<ProjectDto>> ChangeTaskStatusAsync(Guid projectId, Guid taskId, Claim claim, int statusId);
+    Task<GenericResponse<ProjectDto>> RemoveTaskAsync(Guid projectId, Guid taskId, Claim claim);
     // Task Member
-    GenericResponse<ProjectDto> AssignTaskToMember(Guid projectId, int taskId, Claim claim, Guid userAssignId);
-    GenericResponse<ProjectDto> UnassignTaskToMember(Guid projectId, int taskId, Claim claim, Guid userAssignId);
+    Task<GenericResponse<ProjectDto>> AssignTaskToMemberAsync(Guid projectId, Guid taskId, Claim claim, Guid userAssignId);
+    Task<GenericResponse<ProjectDto>> UnassignTaskToMemberAsync(Guid projectId, Guid taskId, Claim claim);
 }
